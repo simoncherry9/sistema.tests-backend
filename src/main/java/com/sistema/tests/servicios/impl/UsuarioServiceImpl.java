@@ -20,19 +20,27 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public Usuario guardarUsuario(Usuario usuario, Set<UsuarioRol> usuarioRoles) throws Exception {
-        Usuario usuarioLocal = usuarioRepository.findByUsername(usuario.getUsername());
-        if (usuarioLocal != null) {
-            System.out.println("El usuario ya existe");
-            throw new Exception("El usuario ya esta presente");
+        Usuario usuarioExistente = usuarioRepository.findByUsername(usuario.getUsername());
+        if (usuarioExistente != null) {
+            throw new Exception("El nombre de usuario ya existe");
         }
-        else {
-            for(UsuarioRol usuarioRol:usuarioRoles) {
-                rolRepository.save(usuarioRol.getRol());
-            }
-            usuario.getUsuarioRoles().addAll(usuarioRoles);
-            usuarioLocal = usuarioRepository.save(usuario);
+
+        usuarioExistente = usuarioRepository.findByEmail(usuario.getEmail());
+        if (usuarioExistente != null) {
+            throw new Exception("El email ya está en uso");
         }
-        return usuarioLocal;
+
+        usuarioExistente = usuarioRepository.findByTelefono(usuario.getTelefono());
+        if (usuarioExistente != null) {
+            throw new Exception("El teléfono ya está en uso");
+        }
+
+        for (UsuarioRol usuarioRol : usuarioRoles) {
+            rolRepository.save(usuarioRol.getRol());
+        }
+
+        usuario.getUsuarioRoles().addAll(usuarioRoles);
+        return usuarioRepository.save(usuario);
     }
 
     @Override
@@ -43,5 +51,23 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public void eliminarUsuario(Long usuarioId) {
         usuarioRepository.deleteById(usuarioId);
+    }
+
+    @Override
+    public boolean existeNombreUsuario(String username) {
+        Usuario usuario = usuarioRepository.findByUsername(username);
+        return usuario != null;
+    }
+
+    @Override
+    public boolean existeEmail(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email);
+        return usuario != null;
+    }
+
+    @Override
+    public boolean existeTelefono(String telefono) {
+        Usuario usuario = usuarioRepository.findByTelefono(telefono);
+        return usuario != null;
     }
 }
